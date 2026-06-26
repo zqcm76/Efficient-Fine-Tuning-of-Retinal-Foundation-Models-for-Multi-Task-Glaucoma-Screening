@@ -1,0 +1,31 @@
+# Phase 1 baseline configuration.
+# Tuned conservatively for a single NVIDIA 3060 (12 GB). Raise grad_accum_steps
+# if you want a larger effective batch without running out of memory.
+
+experiment: baseline
+output_dir: outputs
+
+data:
+  refuge_index: E:/RETFound/phase1/data/data_all.csv
+  image_size: 512        # segmentation resolution (must be a multiple of 16)
+  cls_image_size: 224    # classification resolution
+  num_seg_classes: 3     # 0=bg, 1=disc rim, 2=cup
+  val_split: 0.2         # only used if the index CSV has no 'split' column
+  num_workers: 4         # set to 0 on Windows if you hit dataloader issues
+  pin_memory: true
+
+model:
+  pretrained: true       # ImageNet init for ResNet34; set false for true from-scratch
+  unet_base_channels: 32
+
+train:
+  epochs: 50
+  batch_size: 8
+  lr: 0.0003
+  weight_decay: 0.0001
+  grad_accum_steps: 1
+  amp: true              # mixed precision
+  pos_weight: 9.0        # glaucoma is the rare class in REFUGE (~1:9); tune to your split
+  seg_ce_weight: 1.0
+  seg_dice_weight: 1.0
+  seed: 42
